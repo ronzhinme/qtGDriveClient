@@ -11,7 +11,9 @@
 #include <QJsonObject>
 #include <QMimeDatabase>
 
-const QString TOKEN = "ya29.a0AfH6SMBiGozDZji9bSdw7tJ58xuNPkq2bHVYmyfny1N7PDnpac-oCtBdX3UeYdQqrKVW5AwCDNsUv4bDtN2r37RsjtCNdfFOJ3iKvA84dpQ6Apk5r7--fBd4dVnMm1G-enNU4m9cBaf16glUmbo-UGy_iRRZ";
+// You must set this value at this moment manually
+const QString TOKEN = "Your-access-token";
+
 const QString FILES_URL="https://www.googleapis.com/drive/v3/files";
 const QString RESUMABLE_OPTION = "uploadType=resumable";
 const QString UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
@@ -57,6 +59,9 @@ void GDriveHandler::listFilesRequest()
         QNetworkReply::NetworkError err = reply->error();
         if ((err != QNetworkReply::NoError) || (httpStatus == 0))
         {
+#if defined (QT_DEBUG)
+            qDebug() << "Error:" << err << " " << httpStatus;
+#endif
             Q_EMIT sigRequestError(RequestType::ListFile, QString(""), QString::number(httpStatus));
             return;
         }
@@ -163,7 +168,9 @@ void GDriveHandler::uploadItemRequest(const QUrl &itemUrl, const QUrl& remoteUrl
             QNetworkReply::NetworkError err = reply->error();
             if ((err != QNetworkReply::NoError) || (httpStatus == 0))
             {
+#if defined (QT_DEBUG)
                 qDebug() << httpStatus << err;
+#endif
                 Q_EMIT sigRequestError(RequestType::UploadFile, remoteUrl, itemUrl.toString());
             }
             else
