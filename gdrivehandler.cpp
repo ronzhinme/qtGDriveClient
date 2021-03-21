@@ -1,4 +1,6 @@
 #include "gdrivehandler.h"
+#include "utils.h"
+
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QHttpPart>
@@ -14,19 +16,15 @@ const QString FILES_URL="https://www.googleapis.com/drive/v3/files";
 const QString RESUMABLE_OPTION = "uploadType=resumable";
 const QString UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
 
-void debugRequest(QNetworkRequest request)
-{
-  qDebug() << request.url();
-  const QList<QByteArray>& rawHeaderList(request.rawHeaderList());
-  foreach (QByteArray rawHeader, rawHeaderList) {
-    qDebug() << rawHeader << ":" << request.rawHeader(rawHeader);
-  }
-}
-
 GDriveHandler::GDriveHandler(QObject *parent)
     : QObject(parent)
 {
     m_manager.reset(new QNetworkAccessManager(this));
+}
+
+bool GDriveHandler::isAccessManagerValid()
+{
+    return m_manager.data() != nullptr;
 }
 
 QStringList GDriveHandler::getFiles() const
@@ -41,77 +39,55 @@ void GDriveHandler::setFiles(const QStringList &val)
     Q_EMIT sigFilesChanged();
 }
 
-void GDriveHandler::getFilesInDirectoryRecursive(const QUrl &itemUrl, QList<QUrl> &files)
-{
-    QDir dir(itemUrl.toLocalFile());
-    if(dir.exists())
-    {
-//        qDebug() << __FUNCTION__ << "Directory: " << itemUrl.toLocalFile();
-        for(auto i: dir.entryList(QDir::Files | QDir::AllDirs))
-        {
-            if(i.compare(".") == 0 || i.compare("..") == 0)
-            {
-                continue;
-            }
-
-            getFilesInDirectoryRecursive(QUrl(itemUrl.toString()+"/"+i), files);
-        }
-    }
-    else
-    {
-        files.emplaceBack(itemUrl);
-    }
-}
-
 void GDriveHandler::listFilesRequest()
 {
     if(!isAccessManagerValid())
             return;
 
-        QString tokenStr = "Bearer " + TOKEN;
-        QNetworkRequest newRequest(FILES_URL);
-        newRequest.setRawHeader("Authorization", tokenStr.toUtf8());
-        newRequest.setRawHeader("Content-Type", "application/json; charset=utf-8");
-        newRequest.setRawHeader("Accept", "application/json");
+    QString tokenStr = "Bearer " + TOKEN;
+    QNetworkRequest newRequest(FILES_URL);
+    newRequest.setRawHeader("Authorization", tokenStr.toUtf8());
+    newRequest.setRawHeader("Content-Type", "application/json; charset=utf-8");
+    newRequest.setRawHeader("Accept", "application/json");
 
-        QNetworkReply* reply = m_manager->get(newRequest);
-        connect(reply, &QNetworkReply::finished, [reply, newRequest, this]()
+    QNetworkReply* reply = m_manager->get(newRequest);
+    connect(reply, &QNetworkReply::finished, [reply, newRequest, this]()
+    {
+        int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        QNetworkReply::NetworkError err = reply->error();
+        if ((err != QNetworkReply::NoError) || (httpStatus == 0))
         {
-            int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-            QNetworkReply::NetworkError err = reply->error();
-            if ((err != QNetworkReply::NoError) || (httpStatus == 0))
-            {
-                Q_EMIT sigRequestError(RequestType::ListFile, QString(""), QString::number(httpStatus));
-                return;
-            }
+            Q_EMIT sigRequestError(RequestType::ListFile, QString(""), QString::number(httpStatus));
+            return;
+        }
 
-            QByteArray ret = reply->readAll();
-            reply->abort();
-            reply->deleteLater();
+        QByteArray ret = reply->readAll();
+        reply->abort();
+        reply->deleteLater();
 
-            if (ret.isEmpty())
-            {
-                return;
-            }
+        if (ret.isEmpty())
+        {
+            return;
+        }
 
-            QJsonDocument jsdoc;
-            jsdoc = QJsonDocument::fromJson(ret);
-            QJsonObject jsobj = jsdoc.object();
+        QJsonDocument jsdoc;
+        jsdoc = QJsonDocument::fromJson(ret);
+        QJsonObject jsobj = jsdoc.object();
 
-            if(!m_files.isEmpty())
-            {
-                m_files.clear();
-            }
+        if(!m_files.isEmpty())
+        {
+            m_files.clear();
+        }
 
-            for(auto i : jsobj["files"].toArray())
-            {
-                auto fname = i.toObject()["name"].toString();
-                m_files.append(fname);
-                Q_EMIT sigFilesChanged();
-            }
+        for(auto i : jsobj["files"].toArray())
+        {
+            auto fname = i.toObject()["name"].toString();
+            m_files.append(fname);
+            Q_EMIT sigFilesChanged();
+        }
 
-            Q_EMIT sigRequestCompleted(RequestType::ListFile);
-        });
+        Q_EMIT sigRequestCompleted(RequestType::ListFile);
+    });
 }
 
 void GDriveHandler::createNewFileRequest(const QUrl &itemUrl)
@@ -122,7 +98,7 @@ void GDriveHandler::createNewFileRequest(const QUrl &itemUrl)
     QString tokenStr = "Bearer " + TOKEN;
 
     QList<QUrl> files;
-    getFilesInDirectoryRecursive(itemUrl, files);
+    Utils::getFilesInDirectoryRecursive(itemUrl, files);
 
     for(auto f : files)
     {
@@ -141,7 +117,9 @@ void GDriveHandler::createNewFileRequest(const QUrl &itemUrl)
             QNetworkReply::NetworkError err = reply->error();
             if ((err != QNetworkReply::NoError) || (httpStatus == 0))
             {
+#if defined (QT_DEBUG)
                 qDebug() << "Error:" << err << " " << httpStatus;
+#endif
                 Q_EMIT sigRequestError(RequestType::CreateFile, f);
             }
             else
@@ -196,7 +174,3 @@ void GDriveHandler::uploadItemRequest(const QUrl &itemUrl, const QUrl& remoteUrl
     }
 }
 
-bool GDriveHandler::isAccessManagerValid()
-{
-    return m_manager.data() != nullptr;
-}

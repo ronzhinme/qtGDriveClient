@@ -8,7 +8,8 @@ CONFIG += c++11
 
 SOURCES += \
         gdrivehandler.cpp \
-        main.cpp
+        main.cpp \
+        utils.cpp
 
 RESOURCES += qml.qrc
 
@@ -24,4 +25,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    gdrivehandler.h
+    gdrivehandler.h \
+    utils.h

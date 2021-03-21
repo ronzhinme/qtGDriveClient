@@ -30,7 +30,6 @@ Q_SIGNALS:
     void sigFilesChanged();
 
 private:
-    void getFilesInDirectoryRecursive(const QUrl &itemUrl, QList<QUrl> &files);
     bool isAccessManagerValid();
     QSharedPointer<QNetworkAccessManager> m_manager;
     QStringList m_files;

@@ -16,11 +16,11 @@ Item {
         target: gdrive
 
         function onSigRequestError(type, itemUrl, info) {
-            console.log("Request error:"+ type +" Url: "+ itemUrl +" Info: "+ info)
+//            console.log("Request error:"+ type +" Url: "+ itemUrl +" Info: "+ info)
         }
 
         function onSigRequestCompleted(type, itemUrl, info) {
-            console.log("Request done:"+ type +" Url: "+ itemUrl +" Info: "+ info)
+//            console.log("Request done:"+ type +" Url: "+ itemUrl +" Info: "+ info)
 
             if(type === 0)
             {
