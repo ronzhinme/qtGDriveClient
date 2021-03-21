@@ -1,6 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include <gdrivehandler.h>
+
 int main(int argc, char *argv[])
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -8,6 +10,8 @@ int main(int argc, char *argv[])
 #endif
 
     QGuiApplication app(argc, argv);
+
+    qmlRegisterType<GDriveHandler>("GDrive", 1, 0, "GDrive");
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));
