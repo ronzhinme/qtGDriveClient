@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.12
 import Qt.labs.platform 1.1
+import QtQuick.Layouts 1.12
 
 import GDrive 1.0
 
@@ -16,11 +17,11 @@ Item {
         target: gdrive
 
         function onSigRequestError(type, itemUrl, info) {
-//            console.log("Request error:"+ type +" Url: "+ itemUrl +" Info: "+ info)
+            //            console.log("Request error:"+ type +" Url: "+ itemUrl +" Info: "+ info)
         }
 
         function onSigRequestCompleted(type, itemUrl, info) {
-//            console.log("Request done:"+ type +" Url: "+ itemUrl +" Info: "+ info)
+            //            console.log("Request done:"+ type +" Url: "+ itemUrl +" Info: "+ info)
 
             if(type === 0)
             {
@@ -41,52 +42,58 @@ Item {
         }
     }
 
-    Button {
-        id: updateListBtn
-        anchors.right: parent.right
-        anchors.rightMargin: 10
-        anchors.top: parent.top
-        anchors.topMargin: 10
-        text: "Update"
+    ColumnLayout {
+        spacing: 5
+        anchors.fill: parent
+        anchors.leftMargin: 5
+        anchors.rightMargin: 5
 
-        onClicked: {
-            gdrive.listFilesRequest()
-        }
-    }
+        RowLayout {
+            Text {
+                text: qsTr("Google Access Token: ")
+            }
 
-    Rectangle {
-        width: listView.width + 5
-        height: listView.height
-        anchors.centerIn: listView
-        border.width: 1
-    }
+            TextField {
+                placeholderText: qsTr("Enter Google drive access token")
+                Layout.fillWidth: true
+                text: gdrive.token
+            }
 
-    ListView {
-        id: listView
-        model: gdrive.files
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: updateListBtn.bottom
-        anchors.bottom: uploadBtn.top
-        anchors.margins: 15
-        clip: true
+            Button {
+                id: updateListBtn
+                text: "Update"
 
-        delegate: Text {
-            text: modelData
+                onClicked: {
+                    gdrive.listFilesRequest()
+                }
+            }
         }
 
-    }
+        ListView {
+            id: listView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            model: gdrive.files
+            clip: true
 
-    Button {
-        id: uploadBtn
-        anchors.right: parent.right
-        anchors.rightMargin: 10
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
-        text: "Upload"
+            delegate: Text {
+                text: modelData
+            }
 
-        onClicked: {
-            openFileDialog.open()
+            Rectangle {
+                anchors.fill: parent
+                border.width: 1
+                color: "transparent"
+            }
+        }
+
+        Button {
+            id: uploadBtn
+            text: "Upload"
+            Layout.alignment: Qt.AlignRight
+            onClicked: {
+                openFileDialog.open()
+            }
         }
     }
 }
