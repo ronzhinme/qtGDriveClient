@@ -11,9 +11,6 @@
 #include <QJsonObject>
 #include <QMimeDatabase>
 
-// You must set this value at this moment manually
-const QString TOKEN = "Your-access-token";
-
 const QString FILES_URL="https://www.googleapis.com/drive/v3/files";
 const QString RESUMABLE_OPTION = "uploadType=resumable";
 const QString UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files";
@@ -34,6 +31,11 @@ QStringList GDriveHandler::getFiles() const
     return m_files;
 }
 
+QString GDriveHandler::getToken() const
+{
+    return m_token;
+}
+
 void GDriveHandler::setFiles(const QStringList &val)
 {
     m_files.clear();
@@ -41,12 +43,18 @@ void GDriveHandler::setFiles(const QStringList &val)
     Q_EMIT sigFilesChanged();
 }
 
+void GDriveHandler::setToken(const QString &val)
+{
+    m_token = val;
+    Q_EMIT sigTokenChanged();
+}
+
 void GDriveHandler::listFilesRequest()
 {
     if(!isAccessManagerValid())
             return;
 
-    QString tokenStr = "Bearer " + TOKEN;
+    QString tokenStr = "Bearer " + getToken();
     QNetworkRequest newRequest(FILES_URL);
     newRequest.setRawHeader("Authorization", tokenStr.toUtf8());
     newRequest.setRawHeader("Content-Type", "application/json; charset=utf-8");
@@ -100,7 +108,7 @@ void GDriveHandler::createNewFileRequest(const QUrl &itemUrl)
     if(!isAccessManagerValid())
         return;
 
-    QString tokenStr = "Bearer " + TOKEN;
+    QString tokenStr = "Bearer " + getToken();
 
     QList<QUrl> files;
     Utils::getFilesInDirectoryRecursive(itemUrl, files);
@@ -145,7 +153,7 @@ void GDriveHandler::uploadItemRequest(const QUrl &itemUrl, const QUrl& remoteUrl
     if(!isAccessManagerValid())
         return;
 
-    QString tokenStr = "Bearer " + TOKEN;
+    QString tokenStr = "Bearer " + getToken();
     QNetworkRequest newRequest(remoteUrl);
 
     auto file = new QFile(itemUrl.toLocalFile());
