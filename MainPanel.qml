@@ -6,20 +6,19 @@ import QtQuick.Layouts 1.12
 import GDrive 1.0
 
 Item {
-    GDrive {
+    GDrive
+    {
         id: gdrive
     }
 
-    Connections {
+    Connections
+    {
         target: gdrive
-
         function onSigRequestError(type, itemUrl, info) {
             //console.log("Request error:"+ type +" Url: "+ itemUrl +" Info: "+ info)
         }
-
         function onSigRequestCompleted(type, itemUrl, info) {
             //console.log("Request done:"+ type +" Url: "+ itemUrl +" Info: "+ info)
-
             if(type === 0)
             {
                 gdrive.uploadItemRequest(itemUrl, info);
@@ -27,10 +26,10 @@ Item {
         }
     }
 
-    FileDialog {
+    FileDialog
+    {
         id: openFileDialog
         fileMode: FileDialog.OpenFiles
-
         onAccepted: {
             //console.log(openFileDialog.files)
             for (var item in openFileDialog.files) {
@@ -39,7 +38,8 @@ Item {
         }
     }
 
-    ColumnLayout {
+    ColumnLayout
+    {
         spacing: 5
         anchors.fill: parent
         anchors.leftMargin: 5
@@ -47,21 +47,23 @@ Item {
 
         RowLayout
         {
-            Text {
+            Text
+            {
                 text: qsTr("Google Access Token: ")
             }
 
-            TextField {
+            TextField
+            {
                 id: tokenStr
                 placeholderText: qsTr("Enter Google drive access token")
                 Layout.fillWidth: true
                 text: gdrive.token
             }
 
-            Button {
+            Button
+            {
                 id: updateListBtn
                 text: "Update"
-
                 onClicked: {
                     gdrive.token = tokenStr.text
                     gdrive.listFilesRequest()
@@ -69,13 +71,15 @@ Item {
             }
         }
 
-        Rectangle {
+        Rectangle
+        {
             Layout.fillHeight: true
             Layout.fillWidth: true
             border.width: 1
             color: "transparent"
 
-            ListView {
+            ListView
+            {
                 model: gdrive.files
                 anchors.fill: parent
                 anchors.leftMargin: 5
@@ -88,7 +92,8 @@ Item {
             }
         }
 
-        Button {
+        Button
+        {
             text: "Upload"
             Layout.alignment: Qt.AlignRight
             onClicked: {
