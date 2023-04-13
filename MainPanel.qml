@@ -8,20 +8,17 @@ import GDrive 1.0
 Item {
     GDrive {
         id: gdrive
-        Component.onCompleted: {
-            gdrive.listFilesRequest();
-        }
     }
 
     Connections {
         target: gdrive
 
         function onSigRequestError(type, itemUrl, info) {
-            //            console.log("Request error:"+ type +" Url: "+ itemUrl +" Info: "+ info)
+            //console.log("Request error:"+ type +" Url: "+ itemUrl +" Info: "+ info)
         }
 
         function onSigRequestCompleted(type, itemUrl, info) {
-            //            console.log("Request done:"+ type +" Url: "+ itemUrl +" Info: "+ info)
+            //console.log("Request done:"+ type +" Url: "+ itemUrl +" Info: "+ info)
 
             if(type === 0)
             {
@@ -35,7 +32,7 @@ Item {
         fileMode: FileDialog.OpenFiles
 
         onAccepted: {
-            console.log(openFileDialog.files)
+            //console.log(openFileDialog.files)
             for (var item in openFileDialog.files) {
                 gdrive.createNewFileRequest(openFileDialog.files[item]);
             }
@@ -48,7 +45,8 @@ Item {
         anchors.leftMargin: 5
         anchors.rightMargin: 5
 
-        RowLayout {
+        RowLayout
+        {
             Text {
                 text: qsTr("Google Access Token: ")
             }
@@ -71,26 +69,26 @@ Item {
             }
         }
 
-        ListView {
-            id: listView
-            Layout.fillWidth: true
+        Rectangle {
             Layout.fillHeight: true
-            model: gdrive.files
-            clip: true
+            Layout.fillWidth: true
+            border.width: 1
+            color: "transparent"
 
-            delegate: Text {
-                text: modelData
-            }
-
-            Rectangle {
+            ListView {
+                model: gdrive.files
                 anchors.fill: parent
-                border.width: 1
-                color: "transparent"
+                anchors.leftMargin: 5
+                anchors.rightMargin: 5
+                clip: true
+                delegate: Text {
+                    text: modelData
+                    width: ListView.view.width
+                }
             }
         }
 
         Button {
-            id: uploadBtn
             text: "Upload"
             Layout.alignment: Qt.AlignRight
             onClicked: {
