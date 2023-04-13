@@ -54,6 +54,7 @@ Item {
             }
 
             TextField {
+                id: tokenStr
                 placeholderText: qsTr("Enter Google drive access token")
                 Layout.fillWidth: true
                 text: gdrive.token
@@ -64,6 +65,7 @@ Item {
                 text: "Update"
 
                 onClicked: {
+                    gdrive.token = tokenStr.text
                     gdrive.listFilesRequest()
                 }
             }
