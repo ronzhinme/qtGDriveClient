@@ -61,7 +61,7 @@ void GDriveHandler::listFilesRequest()
     newRequest.setRawHeader("Accept", "application/json");
 
     QNetworkReply* reply = m_manager->get(newRequest);
-    connect(reply, &QNetworkReply::finished, [reply, newRequest, this]()
+    connect(reply, &QNetworkReply::finished, this, [reply, newRequest, this]()
     {
         int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         QNetworkReply::NetworkError err = reply->error();
@@ -92,7 +92,13 @@ void GDriveHandler::listFilesRequest()
             m_files.clear();
         }
 
-        for(auto i : jsobj["files"].toArray())
+        if(!jsobj.contains("files"))
+        {
+            return;
+        }
+
+        const auto files = jsobj["files"].toArray();
+        for(const auto &i : files)
         {
             auto fname = i.toObject()["name"].toString();
             m_files.append(fname);
@@ -113,7 +119,7 @@ void GDriveHandler::createNewFileRequest(const QUrl &itemUrl)
     QList<QUrl> files;
     Utils::getFilesInDirectoryRecursive(itemUrl, files);
 
-    for(auto f : files)
+    for(const auto &f : files)
     {
         QNetworkRequest newRequest((QUrl(UPLOAD_URL +"?"+ RESUMABLE_OPTION)));
         newRequest.setRawHeader("Authorization", tokenStr.toUtf8());
@@ -124,7 +130,7 @@ void GDriveHandler::createNewFileRequest(const QUrl &itemUrl)
         jobj["name"] = QFileInfo(QFile(f.toLocalFile())).fileName();
 
         QNetworkReply* reply = m_manager->post(newRequest, QJsonDocument(jobj).toJson());
-        connect(reply, &QNetworkReply::finished, [reply, newRequest, this, f]()
+        connect(reply, &QNetworkReply::finished, this, [reply, newRequest, this, f]()
         {
             int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
             QNetworkReply::NetworkError err = reply->error();
@@ -137,7 +143,7 @@ void GDriveHandler::createNewFileRequest(const QUrl &itemUrl)
             }
             else
             {
-                QByteArray ret = reply->readAll();
+                reply->readAll();
                 reply->abort();
                 reply->deleteLater();
 
@@ -170,7 +176,7 @@ void GDriveHandler::uploadItemRequest(const QUrl &itemUrl, const QUrl& remoteUrl
 
         QNetworkReply* reply = m_manager->put(newRequest, file->readAll());
         file->close();
-        connect(reply, &QNetworkReply::finished, [reply, newRequest, this, itemUrl, remoteUrl]()
+        connect(reply, &QNetworkReply::finished, this, [reply, this, &itemUrl, &remoteUrl]()
         {
             int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
             QNetworkReply::NetworkError err = reply->error();

@@ -6,9 +6,9 @@
 
 class GDriveHandler : public QObject
 {
-    Q_OBJECT;
-    Q_PROPERTY(QStringList files READ getFiles WRITE setFiles NOTIFY sigFilesChanged);
-    Q_PROPERTY(QString token READ getToken WRITE setToken NOTIFY sigTokenChanged);
+    Q_OBJECT
+    Q_PROPERTY(QStringList files READ getFiles WRITE setFiles NOTIFY sigFilesChanged)
+    Q_PROPERTY(QString token READ getToken WRITE setToken NOTIFY sigTokenChanged)
 public:
     enum class RequestType
     {
@@ -28,7 +28,7 @@ public:
 
     void setFiles(const QStringList &val);
     void setToken(const QString &val);
-Q_SIGNALS:
+signals:
     void sigRequestCompleted(RequestType type, const QUrl &itemUrl = QUrl(), const QString &info = "");
     void sigRequestError(RequestType type, const QUrl &itemUrl = QUrl(), const QString &info = "");
     void sigFilesChanged();

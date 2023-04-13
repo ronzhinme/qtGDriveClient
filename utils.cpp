@@ -6,7 +6,7 @@ void Utils::getFilesInDirectoryRecursive(const QUrl &itemUrl, QList<QUrl> &files
     QDir dir(itemUrl.toLocalFile());
     if(dir.exists())
     {
-        for(auto i: dir.entryList(QDir::Files | QDir::AllDirs))
+        for(const auto &i: dir.entryList(QDir::Files | QDir::AllDirs))
         {
             if(i.compare(".") == 0 || i.compare("..") == 0)
             {
